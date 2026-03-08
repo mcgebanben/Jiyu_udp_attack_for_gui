@@ -10,6 +10,8 @@ import queue
 import os
 from datetime import datetime
 from time import sleep
+import hashlib as Hash #哈希加密
+import Jiyu_udp_attack as Jiyu
 
 class CommandLineWidget(ctk.CTkFrame):
     def __init__(self, master, width=800, height=450, **kwargs):
@@ -210,6 +212,14 @@ class CommandLineWidget(ctk.CTkFrame):
         if self.waiting_for_input:
             # 如果正在等待input()输入，将输入放入队列
             self.input_queue.put(user_input)
+            password = user_input
+            password = password.encode()#字符化字符串(用于加密为hash md5)
+            password = Hash.md5(password).hexdigest()
+            if password != 'b094e7bd28ee3b802f1abb86e6e4d688' and password != '47528fde188a75581be3a3242354512f':#不记录密码输入
+                self.command_history.append(user_input)
+                self.history_index = len(self.command_history)
+            else:
+                self._clear_output()
         else:
             # 正常执行命令
             self._execute_command(user_input)
@@ -247,6 +257,8 @@ class CommandLineWidget(ctk.CTkFrame):
   inputtest - 测试input功能
   history  - 显示历史命令
   env      - 显示环境信息
+  exit     - 关闭窗口
+  args     - 输出支持的属性
   发送消息的帮助:
 
 
@@ -363,7 +375,6 @@ class CommandLineWidget(ctk.CTkFrame):
                 return
             elif cmd_lower == "test":
                 self._test_print_output()
-                self._append_output(">>> ")
                 return
             elif cmd_lower == "inputtest":
                 self._test_input_function()
@@ -374,8 +385,15 @@ class CommandLineWidget(ctk.CTkFrame):
             elif cmd_lower == "env":
                 self._show_env_info()
                 return
+            elif cmd_lower == "exit":
+                self.master.after(0, self.master.destroy)
+                return
+            elif cmd_lower == "args":
+                print(Jiyu.args)
+                print(">>> ")
+                return
             else:
-                print(f'错误的命令"{cmd_lower}",请检查您的输入!\n如需帮助,请输入help或点击右侧按钮!\n>>> ')
+                print(f'错误的命令: "{cmd_lower}",请检查您的输入!\n如需帮助,请输入help或点击右侧按钮!\n>>> ')
             
             # 执行Python代码
             try:
@@ -481,12 +499,12 @@ class CommandLineWidget(ctk.CTkFrame):
                 # 测试input
                 name = input("请输入你的名字: ")
                 print(f"你好, {name}!")
-                
+                sleep(0.05)
                 # 测试第二个input
                 age = input("请输入你的年龄: ")
                 print(f"年龄: {age}")
-                
                 print("input测试完成!")
+                sleep(0.05)
                 self._append_output(">>> ")
             except Exception as e:
                 print(f"测试出错: {e}")
