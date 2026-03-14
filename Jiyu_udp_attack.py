@@ -261,7 +261,6 @@ def pkg_sendlist(cmdtype, content):
         index = 578
         result = basicCMD['-c']
         max_len = len(result) - index  # 剩余可用字节数
-        print(f"[DEBUG] 命令原始长度: {len(arrs)} 字节，最大允许: {max_len} 字节")
         if len(arrs) > max_len:
             print("[!] 警告：命令过长，将被截断！")
         for elem in arrs:
@@ -293,7 +292,6 @@ def send(send_list):
             print("第%s次执行完毕" % str(times + 1))
         if times != args.l - 1:
             sleep(args.t)
-    print(f"数据包总长度: {len(abc)}，命令填充起始位置: 578，命令长度: {len(send_list)}")
 
 
 def creat_send_object():

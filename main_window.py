@@ -151,15 +151,48 @@ def send_message():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
+        print("注意:该功能现有一个无法解决的bug:当发送第二条文字时,如果比第一条短,则会出现字符拼接错误的情况")
+        print('如:第一次输入:msg, 第二次输入:z,则消息会被错误的发送为: "z"g"')
         if len(latest_command["msg"]) != 0:
             print("发现上次的命令!是否需要填充?(填充请输入T)")
             answer = input()
             if answer == "T":
+                global ip_addr, msg, Range
                 Jiyu.args.ip = latest_command["ip"]
                 Jiyu.args.msg = latest_command["msg"]
                 Jiyu.args.l = latest_command["range"]
+                while True:
+                    print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的消息是:  "+msg+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
+                    print("(a).修改ip地址\n(b).修改消息内容\n(c).修改循环次数\n(T).确定\n(F).取消")
+                    answer = input()
+                    time.sleep(0.05)#防止输出乱序
+                    if answer == "a":
+                        print("请输入要修改的ip地址: ")
+                        ip_addr = input()
+                        Jiyu.args.ip = ip_addr
+                        time.sleep(0.05)#防止输出乱序
+                    elif answer == "b":
+                        print("请输入要修改的消息: ")
+                        msg = ''
+                        Jiyu.args.msg = ''
+                        msg = '"'+input()+'"'
+                        Jiyu.args.msg = msg
+                        time.sleep(0.05)#防止输出乱序
+                    elif answer == "c":
+                        print("请输入要循环的次数: ")
+                        Range = 1
+                        Range = int(input())
+                        Jiyu.args.l = Range
+                        time.sleep(0.05)#防止输出乱序
+                    elif answer == "T":
+                        print("已确认")
+                        break
+                    else:
+                        Jiyu.args.ip = latest_command["ip"]
+                        Jiyu.args.msg = latest_command["msg"]
+                        Jiyu.args.l = latest_command["range"]
+                        break
             else:
-                global ip_addr, msg, Range
                 if ip == "N":
                     print("\n\n请输入目标ip地址:")
                     ip_addr = input()
@@ -237,11 +270,40 @@ def send_command():
                 print("发现上次的命令!是否需要填充?(填充请输入T)")
                 answer = input()
                 if answer == "T":
+                    global ip_addr, cmd, Range
                     Jiyu.args.ip = latest_command["ip"]
                     Jiyu.args.c = latest_command["c"]
                     Jiyu.args.l = latest_command["range"]
+                    while True:
+                        print("------------------------------\n你的目标ip地址是:    "+ip_addr+",\n发送的命令是:  "+Jiyu.args.c+",\n要循环:  "+str(Range)+"  次"+",\n发送端口:  "+str(Jiyu.args.p)+",\n循环时间间隔:  "+str(Jiyu.args.t)+"  单位:秒\n------------------------------")
+                        print("(a).修改ip地址\n(b).修改命令内容\n(c).修改循环次数\n(T).确定\n(F).取消")
+                        answer = input()
+                        time.sleep(0.05)#防止输出乱序
+                        if answer == "a":
+                            print("请输入要修改的ip地址: ")
+                            ip_addr = input()
+                            Jiyu.args.ip = ip_addr
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "b":
+                            print("请输入要修改的命令: ")
+                            cmd = '"'+input()+'"'
+                            Jiyu.args.c = cmd
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "c":
+                            print("请输入要循环的次数: ")
+                            Range = 1
+                            Range = int(input())
+                            Jiyu.args.l = Range
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "T":
+                            print("已确认")
+                            break
+                        else:
+                            Jiyu.args.ip = latest_command["ip"]
+                            Jiyu.args.c = latest_command["c"]
+                            Jiyu.args.l = latest_command["range"]
+                            break
                 else:
-                    global ip_addr, cmd, Range
                     if ip == "N":
                         print("\n\n请输入目标ip地址:")
                         ip_addr = input()
@@ -321,9 +383,25 @@ def reboot():
                 print("发现上次的命令!是否需要填充?(填充请输入T)")
                 answer = input()
                 if answer == "T":
-                    Jiyu.args.ip = latest_command["ip"]
-                else:
                     global ip_addr
+                    Jiyu.args.ip = latest_command["ip"]
+                    while True:
+                        print("你将向ip地址为 "+ip_addr+" 的主机发送重启指令")
+                        print("(a).修改ip地址\n(T).确定\n(F).取消")
+                        answer = input()
+                        time.sleep(0.05)#防止输出乱序
+                        if answer == "a":
+                            print("请输入要修改的ip地址: ")
+                            ip_addr = input()
+                            Jiyu.args.ip = ip_addr
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "T":
+                            print("已确认")
+                            break
+                        else:
+                            Jiyu.args.ip = latest_command["ip"]
+                            break
+                else:
                     if ip == "N":
                         print("\n\n请输入目标ip地址:")
                         ip_addr = input()
@@ -384,18 +462,52 @@ def file_download():
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
             app.cli._clear_output()#清空输入
+            print("注意:该功能现有一个无法解决的bug:文件下载功能可能会失效")
             if len(latest_command["url"]) != 0:
                 print("发现上次的命令!是否需要填充?(填充请输入T)")
                 answer = input()
                 if answer == "T":
+                    global ip_addr,url_backup
                     Jiyu.args.ip = latest_command["ip"]
                     url = latest_command["url"]
                     storage = latest_command["storage"]
                     url = '"certutil -urlcache -split -f '+url
                     url = url+' '+storage+'"'
                     Jiyu.args.c = url
+                    while True:
+                        print("你的目标ip地址是:    "+ip_addr+",\n发送的文件链接是:  "+url_backup+",\n文件的保存地址是:  "+storage+",\n发送端口:  "+str(Jiyu.args.p))
+                        print("(a).修改ip地址\n(b).修改下载链接\n(c).修改保存位置\n(T).确定\n(F).取消")
+                        answer = input()
+                        time.sleep(0.05)#防止输出乱序
+                        if answer == "a":
+                            print("请输入要修改的ip地址: ")
+                            ip_addr = input()
+                            Jiyu.args.ip = ip_addr
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "b":
+                            print("请输入要修改的下载链接: ")
+                            url = input()
+                            url_backup = url
+                            url = '"certutil -urlcache -split -f '+url
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "c":
+                            print("请输入要修改的保存位置: (含文件名)")
+                            storage = input()
+                            url = url+' '+storage+'"'
+                            Jiyu.args.c = url
+                            time.sleep(0.05)#防止输出乱序
+                        elif answer == "T":
+                            print("已确认")
+                            break
+                        else:
+                            Jiyu.args.ip = latest_command["ip"]
+                            url = latest_command["url"]
+                            storage = latest_command["storage"]
+                            url = '"certutil -urlcache -split -f '+url
+                            url = url+' '+storage+'"'
+                            Jiyu.args.c = url
+                            break
                 else:
-                    global ip_addr,url_backup
                     if ip == "N":
                         print("\n\n请输入目标ip地址:")
                         ip_addr = input()
@@ -444,7 +556,6 @@ def file_download():
                 latest_command["ip"] = Jiyu.args.ip
                 latest_command["url"] = url
                 latest_command["storage"] = storage
-                latest_command["range"] = Jiyu.args.l
                 Jiyu.args.e = None
                 Jiyu.run_from_cmd()
                 Jiyu.args.e = None #清除命令行指令
