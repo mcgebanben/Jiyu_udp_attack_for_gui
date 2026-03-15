@@ -38,7 +38,12 @@ def get_app_dir():
 task_running = False
 task_lock = threading.Lock()
 
-short_password = '47528fde188a75581be3a3242354512f' #短期密码
+#用户权限
+User = 3 #用户权限等级,范围0-3,数字越小权限越大
+
+truly_password = '1d9db1b6b68cff1d8e1c2cf16563cedc2e4c94f80e58090c8662bc23056e4e10698fff3f0b838cf923fa7dad94cf5f766cb29cf38f3cce275268c4a500599180' #长期密码
+short_password = 'a36a7b8f523c0784593991e4e4e786817721fcf0b4220da511357e967947ea956d4c23b914b44b80e500f1e3d3157e2445bebafd2a288ef8ebd7b7e279ffd2ed' #短期密码
+student_password = 'e0ca2a0b0c095fd4c2d8cc7a63d4e9202cd7cbae511feb0ded6861c916defcb161e245aa492f1cec6d1eebf6cbbcc5e0732ae3cc80cb90507533781e6dedb82a' #学生密码(权限更低)
 
 have_error = False
 
@@ -60,6 +65,22 @@ except Exception as e:
 # 需要禁用的按钮列表（在创建按钮后添加）
 action_buttons = []
 
+#对于特定用户的权限管理
+def disabled_buttons():
+    global User
+    if User == 3:#无密码用户
+        command_btn.configure(state="disabled")
+        reboot_btn.configure(state="disabled")
+        download_btn.configure(state="disabled")
+        Shell_btn.configure(state="disabled")
+    elif User == 2:#学生密码
+        reboot_btn.configure(state="disabled")
+        Shell_btn.configure(state="disabled")
+    elif User == 1:#短期密码
+        Shell_btn.configure(state="disabled")
+    elif User == 0:#长期密码
+        User = User#只是没东西可写罢了
+
 def disable_buttons():
     """禁用所有操作按钮"""
     for btn in action_buttons:
@@ -71,6 +92,7 @@ def enable_buttons():
     for btn in action_buttons:
         btn.configure(state="normal")
     task_running = False
+    disabled_buttons()
 
 def start_task(task_func):
     """启动任务，如果已有任务则提示"""
@@ -254,16 +276,7 @@ def send_command():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
-        password = input("此为开发者专用功能,请输入密码:")
-        password = password.encode()#字符化字符串(用于加密为hash md5)
-        password = Hash.md5(password).hexdigest()
-        truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688' #长期密码
-        if truly_password == password or short_password == password:
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
+        if True:
             Jiyu.args.c = None #先清除command属性，防止误发送
             Jiyu.args.msg = None #先清除msg属性，防止误发送
             if len(latest_command["c"]) != 0:
@@ -369,16 +382,7 @@ def reboot():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
-        password = input("此为开发者专用功能,请输入密码:")
-        password = password.encode()#字符化字符串(用于加密为hash md5)
-        password = Hash.md5(password).hexdigest()
-        truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
-        if truly_password == password or short_password == password:
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
+        if True:
             if len(latest_command["ip"]) != 0:
                 print("发现上次的命令!是否需要填充?(填充请输入T)")
                 answer = input()
@@ -452,17 +456,12 @@ def file_download():
     def task():
         Jiyu.args.c = None #先清除command属性，防止误发送
         Jiyu.args.msg = None #先清除msg属性，防止误发送
-        password = input("此为开发者专用功能,请输入密码:")
-        password = password.encode()#字符化字符串(用于加密为hash md5)
-        password = Hash.md5(password).hexdigest()
-        truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
-        if truly_password == password or short_password == password:
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
-            app.cli._clear_output()#清空输入
+        if True:
             print("注意:该功能现有一个无法解决的bug:文件下载功能可能会失效")
+            print("原因:命令长度过长,无法执行")
+            print("因此,请尽量保持您的文件名简短")
+            print("如:使用短链接/将文件保存在本地使用本地服务器分发")
+            print("缩短保存路径:比如将C:\\Users\\System32\\更改为C:\\")
             if len(latest_command["url"]) != 0:
                 print("发现上次的命令!是否需要填充?(填充请输入T)")
                 answer = input()
@@ -688,11 +687,7 @@ def GET_Shell():
     def task():
         Jiyu.args.c = None
         Jiyu.args.msg = None
-        password = input("此为开发者专用功能,请输入密码:")
-        password = password.encode()
-        password = Hash.md5(password).hexdigest()
-        truly_password = 'b094e7bd28ee3b802f1abb86e6e4d688'
-        if truly_password == password:
+        if True:
             app.cli._clear_output()
             for _ in range(5):
                 app.cli._clear_output()
@@ -735,6 +730,39 @@ def GET_Shell():
             time.sleep(0.05)
             app.cli._append_output(">>> ")
     start_task(task)
+
+def Password():
+    def task():
+        while True:
+            password = input("此为开发者专用功能,请输入密码(要使用无密码模式,请输入:N):")
+            password = password.encode()#字符化字符串(用于加密为hash md5)
+            password = Hash.sha512(password).hexdigest()
+            if truly_password == password:
+                global User
+                app.cli._clear_output()
+                User = 0
+                print("验证通过\n欢迎您,System32!")
+                break
+            elif short_password == password:
+                app.cli._clear_output()
+                User = 1
+                print("验证通过\n欢迎您,Administrator!")
+                break
+            elif student_password == password:
+                app.cli._clear_output()
+                User = 2
+                print("验证通过\n欢迎您,User!")
+                break
+            elif '6b3b006aa3a86286c359a6d243d62a61e46f0c5f7d1db587faa26fbe72718eaee33f774af164e3ba790d4ae4136a25dc993d3246f7be6691fa7346d0be0f1a71' == password:
+                app.cli._clear_output()
+                User = 3
+                print("验证通过\n欢迎您,Guset!")
+                break
+            else:
+                print("密码错误!")
+                time.sleep(0.05)
+    start_task(task)
+    disabled_buttons()
 
 
 #窗口设置
@@ -795,6 +823,8 @@ app.cli.place(x=0, y=50)
 if have_error:
     print("错误!未找到ip_address.txt文件!请确保ip_address.txt和本程序在同一个目录下!")
     print(">>> ")
+
+Password()
 
 #启动窗口
 app.mainloop()
